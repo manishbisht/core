@@ -216,6 +216,41 @@ abstract class Node implements \Sabre\DAV\INode {
 	/**
 	 * @return string
 	 */
+	public function getSharePermissions() {
+		$p = '';
+		$storage = $this->info->getStorage();
+
+		/*
+		 * Without sharing permissions there are also no other permissions
+		 */
+		if (!$storage->isSharable($this->path)) {
+			return '';
+		}
+
+		$p .= 'R';
+
+		if ($this->info->getType() === \OCP\Files\FileInfo::TYPE_FILE) {
+			if ($storage->isUpdatable($this->path)) {
+				$p .= 'W';
+			}
+		} else {
+			if ($storage->isDeletable($this->path)) {
+				$p .= 'D';
+			}
+			if ($storage->isUpdatable($this->path)) {
+				$p .= 'NV';
+			}
+			if ($storage->isCreatable($this->path)) {
+				$p .= 'CK';
+			}
+		}
+
+		return $p;
+	}
+
+	/**
+	 * @return string
+	 */
 	public function getDavPermissions() {
 		$p = '';
 		if ($this->info->isShared()) {

@@ -63,4 +63,65 @@ class Node extends \Test\TestCase {
 		$node = new  \OCA\DAV\Connector\Sabre\File($view, $info);
 		$this->assertEquals($expected, $node->getDavPermissions());
 	}
+
+	public function sharePermissionsProvider() {
+		return [
+			[\OCP\Files\FileInfo::TYPE_FILE, false, false, false, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false, false, false,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false, false,  true, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false, false,  true,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false,  true, false, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false,  true, false,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false,  true,  true, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE, false,  true,  true,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true, false, false, false, 'R'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true, false, false,  true, 'R'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true, false,  true, false, 'RW'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true, false,  true,  true, 'RW'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true,  true, false, false, 'R'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true,  true, false,  true, 'R'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true,  true,  true, false, 'RW'],
+			[\OCP\Files\FileInfo::TYPE_FILE,  true,  true,  true,  true, 'RW'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false, false, false, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false, false, false,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false, false,  true, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false, false,  true,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false,  true, false, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false,  true, false,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false,  true,  true, false, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER, false,  true,  true,  true, ''],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true, false, false, false, 'R'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true, false, false,  true, 'RD'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true, false,  true, false, 'RNV'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true, false,  true,  true, 'RDNV'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true,  true, false, false, 'RCK'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true,  true, false,  true, 'RDCK'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true,  true,  true, false, 'RNVCK'],
+			[\OCP\Files\FileInfo::TYPE_FOLDER,  true,  true,  true,  true, 'RDNVCK'],
+		];
+	}
+
+	/**
+	 * @dataProvider sharePermissionsProvider
+	 */
+	public function testSharePermissions($type, $canShare, $canCreate, $canChange, $canDelete, $expected) {
+		$storage = $this->getMock('\OCP\Files\Storage');
+		$storage->method('isSharable')->willReturn($canShare);
+		$storage->method('isCreatable')->willReturn($canCreate);
+		$storage->method('isUpdatable')->willReturn($canChange);
+		$storage->method('isDeletable')->willReturn($canDelete);
+
+		$info = $this->getMockBuilder('\OC\Files\FileInfo')
+			->disableOriginalConstructor()
+			->setMethods(array('getStorage', 'getType'))
+			->getMock();
+
+		$info->method('getStorage')->willReturn($storage);
+		$info->method('getType')->willReturn($type);
+
+		$view = $this->getMock('\OC\Files\View');
+
+		$node = new  \OCA\DAV\Connector\Sabre\File($view, $info);
+		$this->assertEquals($expected, $node->getSharePermissions());
+	}
 }
