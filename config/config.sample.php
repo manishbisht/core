@@ -414,6 +414,12 @@ $CONFIG = array(
 
 
 /**
+ * File versions
+ *
+ * These parameters control the Versions app.
+ */
+
+/**
  * If the versions app is enabled (default), this setting defines the policy
  * for when versions will be permanently deleted.
  * The app allows for two settings, a minimum time for version retention,
@@ -1104,7 +1110,7 @@ $CONFIG = array(
 'filesystem_check_changes' => 0,
 
 /**
- * On default ownCloud will store the part files created during upload in the
+ * By default ownCloud will store the part files created during upload in the
  * same storage as the upload target. Setting this to false will store the part
  * files in the root of the users folder which might be required to work with certain
  * external storage setups that have limited rename capabilities.
