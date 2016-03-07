@@ -463,17 +463,8 @@ class DefaultShareProvider implements IShareProvider {
 		 * Reshares for this user are shares where they are the owner.
 		 */
 		if ($reshares === false) {
-			//Special case for old shares created via the web UI
-			$or1 = $qb->expr()->andX(
-				$qb->expr()->eq('uid_owner', $qb->createNamedParameter($userId)),
-				$qb->expr()->isNull('uid_initiator')
-			);
-
 			$qb->andWhere(
-				$qb->expr()->orX(
-					$qb->expr()->eq('uid_initiator', $qb->createNamedParameter($userId)),
-					$or1
-				)
+				$qb->expr()->eq('uid_initiator', $qb->createNamedParameter($userId))
 			);
 		} else {
 			$qb->andWhere(
