@@ -274,7 +274,7 @@ class OC {
 					$l->t('Cannot write into "config" directory!'),
 					$l->t('This can usually be fixed by '
 					. '%sgiving the webserver write access to the config directory%s.',
-					 array('<a href="' . $urlGenerator->linkToDocs('admin-dir_permissions') . '" target="_blank">', '</a>'))
+					 array('<a href="' . $urlGenerator->linkToDocs('admin-dir_permissions') . '" target="_blank" rel="noreferrer">', '</a>'))
 				);
 			}
 		}
@@ -722,7 +722,8 @@ class OC {
 	}
 
 	private static function registerEncryptionWrapper() {
-		\OCP\Util::connectHook('OC_Filesystem', 'preSetup', 'OC\Encryption\Manager', 'setupStorage');
+		$manager = self::$server->getEncryptionManager();
+		\OCP\Util::connectHook('OC_Filesystem', 'preSetup', $manager, 'setupStorage');
 	}
 
 	private static function registerEncryptionHooks() {
@@ -823,7 +824,7 @@ class OC {
 		}
 
 		$request = \OC::$server->getRequest();
-		$requestPath = $request->getPathInfo();
+		$requestPath = $request->getRawPathInfo();
 		if (substr($requestPath, -3) !== '.js') { // we need these files during the upgrade
 			self::checkMaintenanceMode();
 			self::checkUpgrade();

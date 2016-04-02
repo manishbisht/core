@@ -3,7 +3,7 @@
 Handlebars.registerHelper('score', function() {
 	if(this.score) {
 		var score = Math.round( this.score / 10 );
-		var imageName = 'rating/s' + score + '.png';
+		var imageName = 'rating/s' + score + '.svg';
 
 		return new Handlebars.SafeString('<img src="' + OC.imagePath('core', imageName) + '">');
 	}
@@ -506,7 +506,7 @@ OC.Settings.Apps = OC.Settings.Apps || {
 		if (apps.length === 0) {
 			$appList.addClass('hidden');
 			$emptyList.removeClass('hidden');
-			$emptyList.removeClass('hidden').find('h2').text(t('settings', 'No apps found for "{query}"', {
+			$emptyList.removeClass('hidden').find('h2').text(t('settings', 'No apps found for {query}', {
 				query: query
 			}));
 		} else {

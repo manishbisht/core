@@ -95,9 +95,12 @@ class Router implements IRouter {
 		if (!isset($this->routingFiles)) {
 			$this->routingFiles = [];
 			foreach (\OC_APP::getEnabledApps() as $app) {
-				$file = \OC_App::getAppPath($app) . '/appinfo/routes.php';
-				if (file_exists($file)) {
-					$this->routingFiles[$app] = $file;
+				$appPath = \OC_App::getAppPath($app);
+				if($appPath !== false) {
+					$file = $appPath . '/appinfo/routes.php';
+					if (file_exists($file)) {
+						$this->routingFiles[$app] = $file;
+					}
 				}
 			}
 		}
@@ -110,6 +113,10 @@ class Router implements IRouter {
 	 * @param null|string $app
 	 */
 	public function loadRoutes($app = null) {
+		if(is_string($app)) {
+			$app = \OC_App::cleanAppId($app);
+		}
+
 		$requestedApp = $app;
 		if ($this->loaded) {
 			return;

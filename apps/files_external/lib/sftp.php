@@ -32,6 +32,7 @@
 namespace OC\Files\Storage;
 use Icewind\Streams\IteratorDirectory;
 
+use Icewind\Streams\RetryWrapper;
 use phpseclib\Net\SFTP\Stream;
 
 /**
@@ -374,7 +375,8 @@ class SFTP extends \OC\Files\Storage\Common {
 				case 'c':
 				case 'c+':
 					$context = stream_context_create(array('sftp' => array('session' => $this->getConnection())));
-					return fopen($this->constructUrl($path), $mode, false, $context);
+					$handle = fopen($this->constructUrl($path), $mode, false, $context);
+					return RetryWrapper::wrap($handle);
 			}
 		} catch (\Exception $e) {
 		}
@@ -459,7 +461,7 @@ class SFTP extends \OC\Files\Storage\Common {
 		// Do not pass the password here. We want to use the Net_SFTP object
 		// supplied via stream context or fail. We only supply username and
 		// hostname because this might show up in logs (they are not used).
-		$url = 'sftp://'.$this->user.'@'.$this->host.':'.$this->port.$this->root.$path;
+		$url = 'sftp://' . urlencode($this->user) . '@' . $this->host . ':' . $this->port . $this->root . $path;
 		return $url;
 	}
 }

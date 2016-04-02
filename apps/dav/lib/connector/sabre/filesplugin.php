@@ -27,10 +27,13 @@
 
 namespace OCA\DAV\Connector\Sabre;
 
+use OC\Files\View;
+use Sabre\DAV\Exception\Forbidden;
 use Sabre\DAV\Exception\NotFound;
 use Sabre\DAV\IFile;
 use \Sabre\DAV\PropFind;
 use \Sabre\DAV\PropPatch;
+use Sabre\DAV\Tree;
 use \Sabre\HTTP\RequestInterface;
 use \Sabre\HTTP\ResponseInterface;
 use OCP\Files\StorageNotAvailableException;
@@ -42,6 +45,7 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 	const FILEID_PROPERTYNAME = '{http://owncloud.org/ns}id';
 	const INTERNAL_FILEID_PROPERTYNAME = '{http://owncloud.org/ns}fileid';
 	const PERMISSIONS_PROPERTYNAME = '{http://owncloud.org/ns}permissions';
+	const SHARE_PERMISSIONS_PROPERTYNAME = '{http://owncloud.org/ns}share-permissions';
 	const DOWNLOADURL_PROPERTYNAME = '{http://owncloud.org/ns}downloadURL';
 	const SIZE_PROPERTYNAME = '{http://owncloud.org/ns}size';
 	const GETETAG_PROPERTYNAME = '{DAV:}getetag';
@@ -58,7 +62,7 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 	private $server;
 
 	/**
-	 * @var \Sabre\DAV\Tree
+	 * @var Tree
 	 */
 	private $tree;
 
@@ -71,21 +75,29 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 	private $isPublic;
 
 	/**
-	 * @var \OC\Files\View
+	 * @var View
 	 */
 	private $fileView;
 
 	/**
-	 * @param \Sabre\DAV\Tree $tree
-	 * @param \OC\Files\View $view
-	 * @param bool $isPublic
+	 * @var bool
 	 */
-	public function __construct(\Sabre\DAV\Tree $tree,
-	                            \OC\Files\View $view,
-	                            $isPublic = false) {
+	private $downloadAttachment;
+
+	/**
+	 * @param Tree $tree
+	 * @param View $view
+	 * @param bool $isPublic
+	 * @param bool $downloadAttachment
+	 */
+	public function __construct(Tree $tree,
+								View $view,
+								$isPublic = false,
+								$downloadAttachment = true) {
 		$this->tree = $tree;
 		$this->fileView = $view;
 		$this->isPublic = $isPublic;
+		$this->downloadAttachment = $downloadAttachment;
 	}
 
 	/**
@@ -105,6 +117,7 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 		$server->protectedProperties[] = self::FILEID_PROPERTYNAME;
 		$server->protectedProperties[] = self::INTERNAL_FILEID_PROPERTYNAME;
 		$server->protectedProperties[] = self::PERMISSIONS_PROPERTYNAME;
+		$server->protectedProperties[] = self::SHARE_PERMISSIONS_PROPERTYNAME;
 		$server->protectedProperties[] = self::SIZE_PROPERTYNAME;
 		$server->protectedProperties[] = self::DOWNLOADURL_PROPERTYNAME;
 		$server->protectedProperties[] = self::OWNER_ID_PROPERTYNAME;
@@ -135,7 +148,7 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 	 * Plugin that checks if a move can actually be performed.
 	 * @param string $source source path
 	 * @param string $destination destination path
-	 * @throws \Sabre\DAV\Exception\Forbidden
+	 * @throws Forbidden
 	 */
 	function checkMove($source, $destination) {
 		list($sourceDir,) = \Sabre\HTTP\URLUtil::splitPath($source);
@@ -145,11 +158,11 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 			$sourceFileInfo = $this->fileView->getFileInfo($source);
 
 			if ($sourceFileInfo === false) {
-				throw new \Sabre\DAV\Exception\NotFound($source . ' does not exist');
+				throw new NotFound($source . ' does not exist');
 			}
 
 			if (!$sourceFileInfo->isDeletable()) {
-				throw new \Sabre\DAV\Exception\Forbidden($source . " cannot be deleted");
+				throw new Forbidden($source . " cannot be deleted");
 			}
 		}
 	}
@@ -192,7 +205,9 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 		if (!($node instanceof IFile)) return;
 
 		// adds a 'Content-Disposition: attachment' header
-		$response->addHeader('Content-Disposition', 'attachment');
+		if ($this->downloadAttachment) {
+			$response->addHeader('Content-Disposition', 'attachment');
+		}
 
 		if ($node instanceof \OCA\DAV\Connector\Sabre\File) {
 			//Add OC-Checksum header
@@ -232,8 +247,12 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 				return $perms;
 			});
 
+			$propFind->handle(self::SHARE_PERMISSIONS_PROPERTYNAME, function() use ($node) {
+				return $node->getSharePermissions();
+			});
+
 			$propFind->handle(self::GETETAG_PROPERTYNAME, function() use ($node) {
-				return $node->getEtag();
+				return $node->getETag();
 			});
 
 			$propFind->handle(self::OWNER_ID_PROPERTYNAME, function() use ($node) {

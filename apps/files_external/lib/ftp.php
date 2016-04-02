@@ -30,6 +30,8 @@
 
 namespace OC\Files\Storage;
 
+use Icewind\Streams\RetryWrapper;
+
 class FTP extends \OC\Files\Storage\StreamWrapper{
 	private $password;
 	private $user;
@@ -76,7 +78,7 @@ class FTP extends \OC\Files\Storage\StreamWrapper{
 		if ($this->secure) {
 			$url.='s';
 		}
-		$url.='://'.$this->user.':'.$this->password.'@'.$this->host.$this->root.$path;
+		$url.='://'.urlencode($this->user).':'.urlencode($this->password).'@'.$this->host.$this->root.$path;
 		return $url;
 	}
 
@@ -105,7 +107,8 @@ class FTP extends \OC\Files\Storage\StreamWrapper{
 			case 'ab':
 				//these are supported by the wrapper
 				$context = stream_context_create(array('ftp' => array('overwrite' => true)));
-				return fopen($this->constructUrl($path), $mode, false, $context);
+				$handle = fopen($this->constructUrl($path), $mode, false, $context);
+				return RetryWrapper::wrap($handle);
 			case 'r+':
 			case 'w+':
 			case 'wb+':

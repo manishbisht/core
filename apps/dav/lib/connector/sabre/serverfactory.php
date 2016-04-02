@@ -132,11 +132,18 @@ class ServerFactory {
 			}
 			$objectTree->init($root, $view, $this->mountManager);
 
-			$server->addPlugin(new \OCA\DAV\Connector\Sabre\FilesPlugin($objectTree, $view));
+			$server->addPlugin(new \OCA\DAV\Connector\Sabre\FilesPlugin($objectTree, $view, false,
+				!$this->config->getSystemValue('debug', false)));
 			$server->addPlugin(new \OCA\DAV\Connector\Sabre\QuotaPlugin($view));
 
 			if($this->userSession->isLoggedIn()) {
 				$server->addPlugin(new \OCA\DAV\Connector\Sabre\TagsPlugin($objectTree, $this->tagManager));
+				$server->addPlugin(new \OCA\DAV\Connector\Sabre\SharesPlugin(
+					$objectTree,
+					$this->userSession,
+					$userFolder,
+					\OC::$server->getShareManager()
+				));
 				$server->addPlugin(new \OCA\DAV\Connector\Sabre\CommentPropertiesPlugin(\OC::$server->getCommentsManager(), $this->userSession));
 				$server->addPlugin(new \OCA\DAV\Connector\Sabre\FilesReportPlugin(
 					$objectTree,
