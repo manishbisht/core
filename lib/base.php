@@ -78,19 +78,14 @@ class OC {
 	 */
 	public static $WEBROOT = '';
 	/**
-	 * The installation path of the 3rdparty folder on the server (e.g. /srv/http/owncloud/3rdparty)
-	 */
-	public static $THIRDPARTYROOT = '';
-	/**
-	 * the root path of the 3rdparty folder for http requests (e.g. owncloud/3rdparty)
-	 */
-	public static $THIRDPARTYWEBROOT = '';
-	/**
 	 * The installation path array of the apps folder on the server (e.g. /srv/http/owncloud) 'path' and
 	 * web path in 'url'
 	 */
 	public static $APPSROOTS = array();
 
+	/**
+	 * @var string
+	 */
 	public static $configDir;
 
 	/**
@@ -183,25 +178,6 @@ class OC {
 			}
 		}
 
-		// search the 3rdparty folder
-		OC::$THIRDPARTYROOT = self::$config->getValue('3rdpartyroot', null);
-		OC::$THIRDPARTYWEBROOT = self::$config->getValue('3rdpartyurl', null);
-
-		if (empty(OC::$THIRDPARTYROOT) && empty(OC::$THIRDPARTYWEBROOT)) {
-			if (file_exists(OC::$SERVERROOT . '/3rdparty')) {
-				OC::$THIRDPARTYROOT = OC::$SERVERROOT;
-				OC::$THIRDPARTYWEBROOT = OC::$WEBROOT;
-			} elseif (file_exists(OC::$SERVERROOT . '/../3rdparty')) {
-				OC::$THIRDPARTYWEBROOT = rtrim(dirname(OC::$WEBROOT), '/');
-				OC::$THIRDPARTYROOT = rtrim(dirname(OC::$SERVERROOT), '/');
-			}
-		}
-		if (empty(OC::$THIRDPARTYROOT) || !file_exists(OC::$THIRDPARTYROOT)) {
-			throw new \RuntimeException('3rdparty directory not found! Please put the ownCloud 3rdparty'
-				. ' folder in the ownCloud folder or the folder above.'
-				. ' You can also configure the location in the config.php file.');
-		}
-
 		// search the apps folder
 		$config_paths = self::$config->getValue('apps_paths', array());
 		if (!empty($config_paths)) {
@@ -240,7 +216,7 @@ class OC {
 		set_include_path(
 			OC::$SERVERROOT . '/lib/private' . PATH_SEPARATOR .
 			OC::$SERVERROOT . '/config' . PATH_SEPARATOR .
-			OC::$THIRDPARTYROOT . '/3rdparty' . PATH_SEPARATOR .
+			OC::$SERVERROOT . '/3rdparty' . PATH_SEPARATOR .
 			implode(PATH_SEPARATOR, $paths) . PATH_SEPARATOR .
 			get_include_path() . PATH_SEPARATOR .
 			OC::$SERVERROOT
@@ -306,7 +282,7 @@ class OC {
 
 			// render error page
 			$template = new OC_Template('', 'update.user', 'guest');
-			OC_Util::addscript('maintenance-check');
+			OC_Util::addScript('maintenance-check');
 			$template->printPage();
 			die();
 		}
@@ -365,6 +341,7 @@ class OC {
 		$systemConfig->setValue('theme', '');
 		\OCP\Util::addScript('config'); // needed for web root
 		\OCP\Util::addScript('update');
+		\OCP\Util::addStyle('update');
 
 		// check whether this is a core update or apps update
 		$installedVersion = $systemConfig->getValue('version', '0.0.0');
@@ -416,7 +393,7 @@ class OC {
 			$session = $cryptoWrapper->wrapSession($session);
 			self::$server->setSession($session);
 
-			// if session cant be started break with http 500 error
+			// if session can't be started break with http 500 error
 		} catch (Exception $e) {
 			\OCP\Util::logException('base', $e);
 			//show the user a detailed error page
@@ -492,7 +469,7 @@ class OC {
 		try {
 			self::initPaths();
 			// setup 3rdparty autoloader
-			$vendorAutoLoad = OC::$THIRDPARTYROOT . '/3rdparty/autoload.php';
+			$vendorAutoLoad = OC::$SERVERROOT. '/3rdparty/autoload.php';
 			if (!file_exists($vendorAutoLoad)) {
 				throw new \RuntimeException('Composer autoloader not found, unable to continue. Check the folder "3rdparty". Running "git submodule update --init" will initialize the git submodule that handles the subfolder "3rdparty".');
 			}
@@ -776,18 +753,16 @@ class OC {
 	 */
 	public static function registerShareHooks() {
 		if (\OC::$server->getSystemConfig()->getValue('installed')) {
-			OC_Hook::connect('OC_User', 'post_deleteUser', 'OC\Share\Hooks', 'post_deleteUser');
-			OC_Hook::connect('OC_User', 'post_addToGroup', 'OC\Share\Hooks', 'post_addToGroup');
-			OC_Hook::connect('OC_Group', 'pre_addToGroup', 'OC\Share\Hooks', 'pre_addToGroup');
+			OC_Hook::connect('OC_User', 'post_deleteUser', 'OC\Share20\Hooks', 'post_deleteUser');
 			OC_Hook::connect('OC_User', 'post_removeFromGroup', 'OC\Share\Hooks', 'post_removeFromGroup');
-			OC_Hook::connect('OC_User', 'post_deleteGroup', 'OC\Share\Hooks', 'post_deleteGroup');
+			OC_Hook::connect('OC_User', 'post_deleteGroup', 'OC\Share20\Hooks', 'post_deleteGroup');
 		}
 	}
 
 	protected static function registerAutoloaderCache() {
 		// The class loader takes an optional low-latency cache, which MUST be
 		// namespaced. The instanceid is used for namespacing, but might be
-		// unavailable at this point. Futhermore, it might not be possible to
+		// unavailable at this point. Furthermore, it might not be possible to
 		// generate an instanceid via \OC_Util::getInstanceId() because the
 		// config file may not be writable. As such, we only register a class
 		// loader cache if instanceid is available without trying to create one.

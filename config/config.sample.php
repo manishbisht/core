@@ -612,21 +612,6 @@ $CONFIG = array(
  */
 
 /**
- * ownCloud uses some 3rd party PHP components to provide certain functionality.
- * These components are shipped as part of the software package and reside in
- * ``owncloud/3rdparty``. Use this option to configure a different location. 
- * For example, if your location is /var/www/owncloud/foo/3rdparty, then the 
- * correct configuration is '3rdpartyroot' => '/var/www/owncloud/foo/',
- */
-'3rdpartyroot' => '',
-
-/**
- * If you have an alternate ``3rdpartyroot``, you must also configure the URL as
- * seen by a Web browser.
- */
-'3rdpartyurl' => '',
-
-/**
  * This section is for configuring the download links for ownCloud clients, as
  * seen in the first-run wizard and on Personal pages.
  */
@@ -1010,10 +995,11 @@ $CONFIG = array(
 
 /**
  * Additional driver options for the database connection, eg. to enable SSL
- * encryption in MySQL.
+ * encryption in MySQL or specify a custom wait timeout on a cheap hoster.
  */
 'dbdriveroptions' => array(
 	PDO::MYSQL_ATTR_SSL_CA => '/file/path/to/ca_cert.pem',
+	PDO::MYSQL_ATTR_INIT_COMMAND => 'SET wait_timeout = 28800'
 ),
 
 /**
@@ -1192,6 +1178,15 @@ $CONFIG = array(
  * shared files.
  */
 'filelocking.enabled' => true,
+
+/**
+ * Set the time-to-live for locks in secconds.
+ *
+ * Any lock older than this will be automatically cleaned up.
+ *
+ * If not set this defaults to either 1 hour or the php max_execution_time, whichever is higher.
+ */
+'filelocking.ttl' => 3600,
 
 /**
  * Memory caching backend for file locking

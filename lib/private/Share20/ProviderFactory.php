@@ -63,7 +63,7 @@ class ProviderFactory implements IProviderFactory {
 				$this->serverContainer->getDatabaseConnection(),
 				$this->serverContainer->getUserManager(),
 				$this->serverContainer->getGroupManager(),
-				$this->serverContainer->getRootFolder()
+				$this->serverContainer->getLazyRootFolder()
 			);
 		}
 
@@ -100,7 +100,8 @@ class ProviderFactory implements IProviderFactory {
 			$notifications = new Notifications(
 				$addressHandler,
 				$this->serverContainer->getHTTPClientService(),
-				$discoveryManager
+				$discoveryManager,
+				$this->serverContainer->getJobList()
 			);
 			$tokenHandler = new TokenHandler(
 				$this->serverContainer->getSecureRandom()
@@ -113,7 +114,7 @@ class ProviderFactory implements IProviderFactory {
 				$tokenHandler,
 				$l,
 				$this->serverContainer->getLogger(),
-				$this->serverContainer->getRootFolder()
+				$this->serverContainer->getLazyRootFolder()
 			);
 		}
 
@@ -144,9 +145,7 @@ class ProviderFactory implements IProviderFactory {
 	public function getProviderForType($shareType) {
 		$provider = null;
 
-		//FIXME we should not report type 2
 		if ($shareType === \OCP\Share::SHARE_TYPE_USER  ||
-			$shareType === 2 ||
 			$shareType === \OCP\Share::SHARE_TYPE_GROUP ||
 			$shareType === \OCP\Share::SHARE_TYPE_LINK) {
 			$provider = $this->defaultShareProvider();

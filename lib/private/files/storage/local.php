@@ -176,7 +176,18 @@ class Local extends \OC\Files\Storage\Common {
 	}
 
 	public function file_get_contents($path) {
-		return file_get_contents($this->getSourcePath($path));
+		// file_get_contents() has a memory leak: https://bugs.php.net/bug.php?id=61961
+		$fileName = $this->getSourcePath($path);
+
+		$fileSize = filesize($fileName);
+		if ($fileSize === 0) {
+			return '';
+		}
+
+		$handle = fopen($fileName,'rb');
+		$content = fread($handle, $fileSize);
+		fclose($handle);
+		return $content;
 	}
 
 	public function file_put_contents($path, $data) {
@@ -220,7 +231,7 @@ class Local extends \OC\Files\Storage\Common {
 		}
 
 		if ($this->is_dir($path1)) {
-			// we cant move folders across devices, use copy instead
+			// we can't move folders across devices, use copy instead
 			$stat1 = stat(dirname($this->getSourcePath($path1)));
 			$stat2 = stat(dirname($this->getSourcePath($path2)));
 			if ($stat1['dev'] !== $stat2['dev']) {

@@ -579,7 +579,7 @@ class ManagerTest extends \Test\TestCase {
 		$share->method('getShareType')->willReturn($type);
 		$share->method('getSharedWith')->willReturn($sharedWith);
 		$share->method('getSharedBy')->willReturn($sharedBy);
-		$share->method('getSharedOwner')->willReturn($shareOwner);
+		$share->method('getShareOwner')->willReturn($shareOwner);
 		$share->method('getNode')->willReturn($path);
 		$share->method('getPermissions')->willReturn($permissions);
 		$share->method('getExpirationDate')->willReturn($expireDate);
@@ -2042,6 +2042,46 @@ class ManagerTest extends \Test\TestCase {
 		$this->assertSame($share, $ret);
 	}
 
+	public function testGetShareByTokenWithException() {
+		$factory = $this->getMock('\OCP\Share\IProviderFactory');
+
+		$manager = new Manager(
+			$this->logger,
+			$this->config,
+			$this->secureRandom,
+			$this->hasher,
+			$this->mountManager,
+			$this->groupManager,
+			$this->l,
+			$factory,
+			$this->userManager,
+			$this->rootFolder
+		);
+
+		$share = $this->getMock('\OCP\Share\IShare');
+
+		$factory->expects($this->at(0))
+			->method('getProviderForType')
+			->with(\OCP\Share::SHARE_TYPE_LINK)
+			->willReturn($this->defaultProvider);
+		$factory->expects($this->at(1))
+			->method('getProviderForType')
+			->with(\OCP\Share::SHARE_TYPE_REMOTE)
+			->willReturn($this->defaultProvider);
+
+		$this->defaultProvider->expects($this->at(0))
+			->method('getShareByToken')
+			->with('token')
+			->will($this->throwException(new ShareNotFound()));
+		$this->defaultProvider->expects($this->at(1))
+			->method('getShareByToken')
+			->with('token')
+			->willReturn($share);
+
+		$ret = $manager->getShareByToken('token');
+		$this->assertSame($share, $ret);
+	}
+
 	/**
 	 * @expectedException \OCP\Share\Exceptions\ShareNotFound
 	 */
@@ -2082,6 +2122,25 @@ class ManagerTest extends \Test\TestCase {
 		$res = $this->manager->getShareByToken('expiredToken');
 
 		$this->assertSame($share, $res);
+	}
+
+	public function testGetShareByTokenPublicSharingDisabled() {
+		$share = $this->manager->newShare();
+		$share->setShareType(\OCP\Share::SHARE_TYPE_LINK)
+			->setPermissions(\OCP\Constants::PERMISSION_READ | \OCP\Constants::PERMISSION_CREATE | \OCP\Constants::PERMISSION_UPDATE);
+
+		$this->config->method('getAppValue')->will($this->returnValueMap([
+			['core', 'shareapi_allow_public_upload', 'yes', 'no'],
+		]));
+
+		$this->defaultProvider->expects($this->once())
+			->method('getShareByToken')
+			->willReturn('validToken')
+			->willReturn($share);
+
+		$res = $this->manager->getShareByToken('validToken');
+
+		$this->assertSame(\OCP\Constants::PERMISSION_READ, $res->getPermissions());
 	}
 
 	public function testCheckPasswordNoLinkShare() {

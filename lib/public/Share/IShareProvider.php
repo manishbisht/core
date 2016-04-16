@@ -146,4 +146,24 @@ interface IShareProvider {
 	 * @since 9.0.0
 	 */
 	public function getShareByToken($token);
+
+	/**
+	 * A user is deleted from the system
+	 * So clean up the relevant shares.
+	 *
+	 * @param string $uid
+	 * @param int $shareType
+	 * @since 9.1.0
+	 */
+	public function userDeleted($uid, $shareType);
+
+	/**
+	 * A group is deleted from the system.
+	 * We have to clean up all shares to this group.
+	 * Providers not handling group shares should just return
+	 *
+	 * @param string $gid
+	 * @since 9.1.0
+	 */
+	public function groupDeleted($gid);
 }

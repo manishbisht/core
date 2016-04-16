@@ -563,4 +563,31 @@ class FederatedShareProvider implements IShareProvider {
 		return $nodes[0];
 	}
 
+	/**
+	 * A user is deleted from the system
+	 * So clean up the relevant shares.
+	 *
+	 * @param string $uid
+	 * @param int $shareType
+	 */
+	public function userDeleted($uid, $shareType) {
+		//TODO: probabaly a good idea to send unshare info to remote servers
+
+		$qb = $this->dbConnection->getQueryBuilder();
+
+		$qb->delete('share')
+			->where($qb->expr()->eq('share_type', $qb->createNamedParameter(\OCP\Share::SHARE_TYPE_REMOTE)))
+			->andWhere($qb->expr()->eq('uid_owner', $qb->createNamedParameter($uid)))
+			->execute();
+	}
+
+	/**
+	 * This provider does not handle groups
+	 *
+	 * @param string $gid
+	 */
+	public function groupDeleted($gid) {
+		// We don't handle groups here
+		return;
+	}
 }

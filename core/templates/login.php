@@ -27,13 +27,13 @@ script('core', [
 		<?php endforeach; ?>
 		<?php if (isset($_['internalexception']) && ($_['internalexception'])): ?>
 			<div class="warning">
-				<?php p($l->t('An internal error occured.')); ?><br>
+				<?php p($l->t('An internal error occurred.')); ?><br>
 				<small><?php p($l->t('Please try again or contact your administrator.')); ?></small>
 			</div>
 		<?php endif; ?>
 		<div id="message" class="hidden">
 			<img class="float-spinner" alt=""
-				src="<?php p(\OCP\Util::imagePath('core', 'loading-dark.gif'));?>">
+				src="<?php p(image_path('core', 'loading-dark.gif'));?>">
 			<span id="messageText"></span>
 			<!-- the following div ensures that the spinner is always inside the #message div -->
 			<div style="clear: both;"></div>

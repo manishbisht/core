@@ -239,7 +239,11 @@
 
 			this.fileSummary = this._createSummary();
 
-			this.setSort('name', 'asc');
+			if (options.sorting) {
+				this.setSort(options.sorting.mode, options.sorting.direction, false, false);
+			} else {
+				this.setSort('name', 'asc', false, false);
+			}
 
 			var breadcrumbOptions = {
 				onClick: _.bind(this._onClickBreadCrumb, this),
@@ -390,6 +394,11 @@
 					model.toJSON(),
 					{updateSummary: true, silent: false, animate: true}
 				);
+
+				// restore selection state
+				var selected = !!self._selectedFiles[$tr.data('id')];
+				self._selectFileEl($tr, selected);
+
 				$tr.toggleClass('highlighted', highlightState);
 			});
 			model.on('busy', function(model, state) {
@@ -690,14 +699,14 @@
 			sort = $target.attr('data-sort');
 			if (sort) {
 				if (this._sort === sort) {
-					this.setSort(sort, (this._sortDirection === 'desc')?'asc':'desc', true);
+					this.setSort(sort, (this._sortDirection === 'desc')?'asc':'desc', true, true);
 				}
 				else {
 					if ( sort === 'name' ) {	//default sorting of name is opposite to size and mtime
-						this.setSort(sort, 'asc', true);
+						this.setSort(sort, 'asc', true, true);
 					}
 					else {
-						this.setSort(sort, 'desc', true);
+						this.setSort(sort, 'desc', true, true);
 					}
 				}
 			}
@@ -1365,8 +1374,9 @@
 		 * @param sort sort attribute name
 		 * @param direction sort direction, one of "asc" or "desc"
 		 * @param update true to update the list, false otherwise (default)
+		 * @param persist true to save changes in the database (default)
 		 */
-		setSort: function(sort, direction, update) {
+		setSort: function(sort, direction, update, persist) {
 			var comparator = FileList.Comparators[sort] || FileList.Comparators.name;
 			this._sort = sort;
 			this._sortDirection = (direction === 'desc')?'desc':'asc';
@@ -1396,6 +1406,13 @@
 				else {
 					this.reload();
 				}
+			}
+
+			if (persist) {
+				$.post(OC.generateUrl('/apps/files/api/v1/sorting'), {
+					mode: sort,
+					direction: direction
+				});
 			}
 		},
 
@@ -2490,7 +2507,6 @@
 				}
 			});
 			fileUploadStart.on('fileuploadadd', function(e, data) {
-				console.log('XXXXXXX');
 				OC.Upload.log('filelist handle fileuploadadd', e, data);
 
 				//finish delete if we are uploading a deleted file

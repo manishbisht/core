@@ -255,7 +255,7 @@ var OC={
 	 *
 	 * Examples:
 	 * http://example.com => example.com
-	 * https://example.com => exmaple.com
+	 * https://example.com => example.com
 	 * http://example.com:8080 => example.com:8080
 	 *
 	 * @return {string} host
@@ -1510,7 +1510,7 @@ function initCore() {
 		initSessionHeartBeat();
 	}
 
-	if(!OC.Util.hasSVGSupport()){ //replace all svg images with png images for browser that dont support svg
+	if(!OC.Util.hasSVGSupport()){ //replace all svg images with png images for browser that don't support svg
 		OC.Util.replaceSVG();
 	}else{
 		SVGSupport.checkMimeType();
@@ -1553,11 +1553,30 @@ function initCore() {
 			}
 			if(!event.ctrlKey) {
 				$app.addClass('app-loading');
+			} else {
+				// Close navigation when opening app in
+				// a new tab
+				OC.hideMenus();
 			}
 		});
 	}
 
+	function setupUserMenu() {
+		var $menu = $('#header #settings');
+
+		$menu.delegate('a', 'click', function(event) {
+			var $page = $(event.target);
+			if (!$page.is('a')) {
+				$page = $page.closest('a');
+			}
+			$page.find('img').remove();
+			$page.find('div').remove(); // prevent odd double-clicks
+			$page.prepend($('<div/>').addClass('icon-loading-dark'));
+		});
+	}
+
 	setupMainMenu();
+	setupUserMenu();
 
 	// move triangle of apps dropdown to align with app name triangle
 	// 2 is the additional offset between the triangles

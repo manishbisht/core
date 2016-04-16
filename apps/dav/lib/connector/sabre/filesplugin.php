@@ -28,24 +28,26 @@
 namespace OCA\DAV\Connector\Sabre;
 
 use OC\Files\View;
+use OCA\DAV\Upload\FutureFile;
 use Sabre\DAV\Exception\Forbidden;
 use Sabre\DAV\Exception\NotFound;
 use Sabre\DAV\IFile;
 use \Sabre\DAV\PropFind;
 use \Sabre\DAV\PropPatch;
+use Sabre\DAV\ServerPlugin;
 use Sabre\DAV\Tree;
 use \Sabre\HTTP\RequestInterface;
 use \Sabre\HTTP\ResponseInterface;
 use OCP\Files\StorageNotAvailableException;
 
-class FilesPlugin extends \Sabre\DAV\ServerPlugin {
+class FilesPlugin extends ServerPlugin {
 
 	// namespace
 	const NS_OWNCLOUD = 'http://owncloud.org/ns';
 	const FILEID_PROPERTYNAME = '{http://owncloud.org/ns}id';
 	const INTERNAL_FILEID_PROPERTYNAME = '{http://owncloud.org/ns}fileid';
 	const PERMISSIONS_PROPERTYNAME = '{http://owncloud.org/ns}permissions';
-	const SHARE_PERMISSIONS_PROPERTYNAME = '{http://owncloud.org/ns}share-permissions';
+	const SHARE_PERMISSIONS_PROPERTYNAME = '{http://open-collaboration-services.org/ns}share-permissions';
 	const DOWNLOADURL_PROPERTYNAME = '{http://owncloud.org/ns}downloadURL';
 	const SIZE_PROPERTYNAME = '{http://owncloud.org/ns}size';
 	const GETETAG_PROPERTYNAME = '{DAV:}getetag';
@@ -146,11 +148,17 @@ class FilesPlugin extends \Sabre\DAV\ServerPlugin {
 
 	/**
 	 * Plugin that checks if a move can actually be performed.
+	 *
 	 * @param string $source source path
 	 * @param string $destination destination path
 	 * @throws Forbidden
+	 * @throws NotFound
 	 */
 	function checkMove($source, $destination) {
+		$sourceNode = $this->tree->getNodeForPath($source);
+		if ($sourceNode instanceof FutureFile) {
+			return;
+		}
 		list($sourceDir,) = \Sabre\HTTP\URLUtil::splitPath($source);
 		list($destinationDir,) = \Sabre\HTTP\URLUtil::splitPath($destination);
 

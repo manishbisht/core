@@ -150,6 +150,26 @@ interface IManager {
 	public function checkPassword(IShare $share, $password);
 
 	/**
+	 * The user with UID is deleted.
+	 * All share providers have to cleanup the shares with this user as well
+	 * as shares owned by this user.
+	 * Shares only initiated by this user are fine.
+	 *
+	 * @param string $uid
+	 * @since 9.1.0
+	 */
+	public function userDeleted($uid);
+
+	/**
+	 * The group with $gid is deleted
+	 * We need to clear up all shares to this group
+	 *
+	 * @param $gid
+	 * @since 9.1.0
+	 */
+	public function groupDeleted($gid);
+
+	/**
 	 * Instantiates a new share object. This is to be passed to
 	 * createShare.
 	 *
