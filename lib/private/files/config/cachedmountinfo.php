@@ -30,22 +30,22 @@ class CachedMountInfo implements ICachedMountInfo {
 	/**
 	 * @var IUser
 	 */
-	private $user;
+	protected $user;
 
 	/**
 	 * @var int
 	 */
-	private $storageId;
+	protected $storageId;
 
 	/**
 	 * @var int
 	 */
-	private $rootId;
+	protected $rootId;
 
 	/**
 	 * @var string
 	 */
-	private $mountPoint;
+	protected $mountPoint;
 
 	/**
 	 * CachedMountInfo constructor.
@@ -88,9 +88,9 @@ class CachedMountInfo implements ICachedMountInfo {
 	 */
 	public function getMountPointNode() {
 		// TODO injection etc
-		Filesystem::initMountPoints($this->user->getUID());
-		$userNode = \OC::$server->getUserFolder($this->user->getUID());
-		$nodes = $userNode->getById($this->rootId);
+		Filesystem::initMountPoints($this->getUser()->getUID());
+		$userNode = \OC::$server->getUserFolder($this->getUser()->getUID());
+		$nodes = $userNode->getById($this->getRootId());
 		if (count($nodes) > 0) {
 			return $nodes[0];
 		} else {

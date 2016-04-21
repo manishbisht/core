@@ -142,8 +142,6 @@
     "Expiration" : "Erääntyminen",
     "Expiration date" : "Päättymispäivä",
     "Choose a password for the public link" : "Valitse salasana julkiselle linkille",
-    "Sending ..." : "Lähetetään...",
-    "Email sent" : "Sähköposti lähetetty",
     "Resharing is not allowed" : "Jakaminen uudelleen ei ole salittu",
     "Share link" : "Jaa linkki",
     "Link" : "Linkki",
@@ -152,6 +150,8 @@
     "Allow editing" : "Salli muokkaus",
     "Email link to person" : "Lähetä linkki sähköpostitse",
     "Send" : "Lähetä",
+    "Sending ..." : "Lähetetään...",
+    "Email sent" : "Sähköposti lähetetty",
     "Shared with you and the group {group} by {owner}" : "Jaettu sinun ja ryhmän {group} kanssa käyttäjän {owner} toimesta",
     "Shared with you by {owner}" : "Jaettu kanssasi käyttäjän {owner} toimesta",
     "group" : "ryhmä",
@@ -294,6 +294,8 @@
     "Start update" : "Käynnistä päivitys",
     "To avoid timeouts with larger installations, you can instead run the following command from your installation directory:" : "Välttääksesi aikakatkaisuja suurikokoisten asennusten kanssa, voit suorittaa vaihtoehtoisesti seuraavan komennon asennushakemistossa:",
     "Detailed logs" : "Yksityiskohtainen loki",
+    "Update needed" : "Päivitys vaaditaan",
+    "Please use the command line updater because you have a big instance." : "Käytä komentorivipäivitintä, koska käyttämäsi ownCloud on sen verran suuri.",
     "This %s instance is currently in maintenance mode, which may take a while." : "Tämä %s-instanssi on parhaillaan huoltotilassa, huollossa saattaa kestää hetki.",
     "This page will refresh itself when the %s instance is available again." : "Tämä sivu päivittää itsensä, kun %s on jälleen käytettävissä."
 },"pluralForm" :"nplurals=2; plural=(n != 1);"

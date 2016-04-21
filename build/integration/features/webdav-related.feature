@@ -68,13 +68,22 @@ Feature: webdav-related
 		And Downloading last public shared file with range "bytes=51-77"
 		Then Downloaded content should be "example file for developers"
 
+	Scenario: download a public shared file inside a folder with range
+		Given user "user0" exists
+		And As an "user0"
+		When creating a share with
+			| path | PARENT |
+			| shareType | 3 |
+		And Downloading last public shared file inside a folder "/parent.txt" with range "bytes=1-7"
+		Then Downloaded content should be "wnCloud"
+
 	Scenario: Downloading a file on the old endpoint should serve security headers
 		Given using dav path "remote.php/webdav"
 		And As an "admin"
 		When Downloading file "/welcome.txt"
 		Then The following headers should be set
 			|Content-Disposition|attachment|
-			|Content-Security-Policy|default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-src *; img-src * data: blob:; font-src 'self' data:; media-src *; connect-src *|
+			|Content-Security-Policy|default-src 'none';|
 			|X-Content-Type-Options |nosniff|
 			|X-Download-Options|noopen|
 			|X-Frame-Options|Sameorigin|
@@ -89,7 +98,7 @@ Feature: webdav-related
 		When Downloading file "/welcome.txt"
 		Then The following headers should be set
 			|Content-Disposition|attachment|
-			|Content-Security-Policy|default-src 'self'; script-src 'self' 'unsafe-eval'; style-src 'self' 'unsafe-inline'; frame-src *; img-src * data: blob:; font-src 'self' data:; media-src *; connect-src *|
+			|Content-Security-Policy|default-src 'none';|
 			|X-Content-Type-Options |nosniff|
 			|X-Download-Options|noopen|
 			|X-Frame-Options|Sameorigin|

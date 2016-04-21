@@ -430,14 +430,14 @@ $CONFIG = array(
  * Both minimum and maximum times can be set together to explicitly define
  * version deletion. For migration purposes, this setting is installed
  * initially set to "auto", which is equivalent to the default setting in
- * ownCloud 8.1 and before.
+ * ownCloud 8.1 and before. 
  *
  * Available values:
  *
  * * ``auto``      
  *     default setting. Automatically expire versions according to expire 
- *     rules. Please refer to Files_versions online documentation for more 
- *     info.
+ *     rules. Please refer to :doc:`../configuration_files/file_versioning` for 
+ *     more information.
  * * ``D, auto``   
  *     keep versions at least for D days, apply expire rules to all versions 
  *     that are older than D days
@@ -725,7 +725,7 @@ $CONFIG = array(
  */
 'preview_office_cl_parameters' =>
 	' --headless --nologo --nofirststartwizard --invisible --norestore '.
-	'-convert-to pdf -outdir ',
+	'--convert-to pdf --outdir ',
 
 /**
  * Only register providers that have been explicitly enabled
@@ -1197,12 +1197,30 @@ $CONFIG = array(
 'memcache.locking' => '\\OC\\Memcache\\Redis',
 
 /**
+ * Disable the web based updater
+ */
+'upgrade.disable-web' => false,
+
+/**
  * Set this ownCloud instance to debugging mode
  *
  * Only enable this for local development and not in production environments
  * This will disable the minifier and outputs some additional debug information
  */
 'debug' => false,
+
+/**
+ * Sets the data-fingerprint of the current data served
+ *
+ * This is a property used by the clients to find out if a backup has been
+ * restored on the server. Once a backup is restored run
+ * ./occ maintenance:data-fingerprint
+ * To set this to a new value.
+ *
+ * Updating/Deleting this value can make connected clients stall until
+ * the user has resolved conflicts.
+ */
+'data-fingerprint' => '',
 
 /**
  * This entry is just here to show a warning in case somebody copied the sample

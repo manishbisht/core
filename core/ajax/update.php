@@ -40,6 +40,14 @@ $eventSource = \OC::$server->createEventSource();
 $eventSource->send('success', (string)$l->t('Preparing update'));
 
 if (OC::checkUpgrade(false)) {
+
+	$config = \OC::$server->getSystemConfig();
+	if ($config->getValue('upgrade.disable-web', false)) {
+		$eventSource->send('failure', (string)$l->t('Please use the command line updater because automatic updating is disabled in the config.php.'));
+		$eventSource->close();
+		exit();
+	}
+
 	// if a user is currently logged in, their session must be ignored to
 	// avoid side effects
 	\OC_User::setIncognitoMode(true);
@@ -47,7 +55,6 @@ if (OC::checkUpgrade(false)) {
 	$logger = \OC::$server->getLogger();
 	$config = \OC::$server->getConfig();
 	$updater = new \OC\Updater(
-			\OC::$server->getHTTPHelper(),
 			$config,
 			\OC::$server->getIntegrityCodeChecker(),
 			$logger
